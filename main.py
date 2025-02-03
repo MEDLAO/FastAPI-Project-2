@@ -1,10 +1,20 @@
 import io
 import qrcode
-from fastapi import FastAPI, Query, Response
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Query, Response, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 
 
 app = FastAPI()
+
+
+@app.middleware("http")
+async def validate_rapidapi_request(request: Request, call_next):
+    rapidapi_key = request.headers.get("X-RapidAPI-Key")
+
+    if not rapidapi_key:
+        return JSONResponse(status_code=403, content={"error": "Access restricted to RapidAPI users."})
+
+    return await call_next(request)
 
 
 @app.get("/generate_qr/")
