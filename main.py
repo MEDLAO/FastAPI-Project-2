@@ -17,6 +17,23 @@ async def validate_rapidapi_request(request: Request, call_next):
     return await call_next(request)
 
 
+@app.get("/")
+def read_root():
+    welcome_message = (
+        "Welcome!"
+        "¡Bienvenido!"
+        "欢迎!"
+        "नमस्ते!"
+        "مرحبًا!"
+        "Olá!"
+        "Здравствуйте!"
+        "Bonjour!"
+        "বাংলা!"
+        "こんにちは!"
+    )
+    return {"message": welcome_message}
+
+
 @app.get("/generate_qr/")
 def generate_qr(text: str = Query(..., description="Text or URL to encode in QR Code"), download: bool = False):
     """Generates a QR code from the given text or URL."""
