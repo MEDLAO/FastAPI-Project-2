@@ -7,14 +7,14 @@ from fastapi.responses import JSONResponse, StreamingResponse
 app = FastAPI()
 
 
-@app.middleware("http")
-async def validate_rapidapi_request(request: Request, call_next):
-    rapidapi_key = request.headers.get("X-RapidAPI-Key")
-
-    if not rapidapi_key:
-        return JSONResponse(status_code=403, content={"error": "Access restricted to RapidAPI users."})
-
-    return await call_next(request)
+# @app.middleware("http")
+# async def validate_rapidapi_request(request: Request, call_next):
+#     rapidapi_key = request.headers.get("X-RapidAPI-Key")
+#
+#     if not rapidapi_key:
+#         return JSONResponse(status_code=403, content={"error": "Access restricted to RapidAPI users."})
+#
+#     return await call_next(request)
 
 
 @app.get("/")
@@ -32,6 +32,11 @@ def read_root():
         "こんにちは!"
     )
     return {"message": welcome_message}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
 
 @app.get("/generate_qr/")
