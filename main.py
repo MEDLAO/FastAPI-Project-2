@@ -61,7 +61,9 @@ def generate_qr(text: str = Query(..., description="Text or URL to encode in QR 
         return Response(
             content=img_io.getvalue(),
             media_type="image/png",
-            headers={"Content-Disposition": f"attachment; filename=qr_code.png"}
+            headers={"Content-Disposition": f"attachment; filename=qr_code.png",
+                     "Content-Length": str(len(img_io.getvalue()))
+                     }
         )
 
     # Return the image as a response without saving it
