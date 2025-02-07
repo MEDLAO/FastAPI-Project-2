@@ -2,8 +2,8 @@ import io
 import os
 import qrcode
 import tempfile
-from fastapi import FastAPI, Query, Response, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import FastAPI, Query, Request
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 
 
 app = FastAPI()
