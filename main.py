@@ -1,6 +1,7 @@
 import io
 import os
 import qrcode
+import tempfile
 from fastapi import FastAPI, Query, Response, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -44,27 +45,29 @@ def health_check():
 
 
 @app.get("/generate_qr/")
-def generate_qr(text: str = Query(..., description="Text or URL to encode in QR Code"), download: bool = False):
+def generate_qr(
+    text: str = Query(..., description="Text or URL to encode in QR Code"),
+    download: bool = False
+):
     """Generates a QR code from the given text or URL."""
     qr = qrcode.make(text)
 
-    # Creates an in-memory buffer
-    img_io = io.BytesIO()
-
-    # Save the QR code to the buffer in PNG format
-    qr.save(img_io, format="PNG")
-
-    # Move the pointer back to the start of the buffer
-    img_io.seek(0)
-
     if download:
-        return Response(
-            content=img_io.getvalue(),
+        # ✅ Create a temporary file to store the QR code
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+            qr.save(temp_file, format="PNG")
+            temp_file_path = temp_file.name  # Get file path
+
+        # ✅ Serve the QR code as a file download
+        return FileResponse(
+            path=temp_file_path,
             media_type="image/png",
-            headers={"Content-Disposition": f"attachment; filename=qr_code.png",
-                     "Content-Length": str(len(img_io.getvalue()))
-                     }
+            filename="qr_code.png"
         )
 
-    # Return the image as a response without saving it
+    # ✅ If not downloading, return the QR code as an inline image
+    img_io = io.BytesIO()
+    qr.save(img_io, format="PNG")
+    img_io.seek(0)
+
     return StreamingResponse(img_io, media_type="image/png")
