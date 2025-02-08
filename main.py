@@ -2,7 +2,7 @@ import io
 import os
 import qrcode
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, StreamingResponse
 
 
 app = FastAPI()
@@ -44,11 +44,9 @@ def health_check():
 
 
 @app.get("/generate_qr/")
-def generate_qr(
-    request: Request,
-    text: str = Query(..., description="Text or URL to encode in QR Code")
-):
-    """Generates a QR code, returns the image, and provides a download link."""
+def generate_qr(text: str = Query(..., description="Text or URL to encode in QR Code")):
+    """Generates a QR code and returns it as an image."""
+
     qr = qrcode.make(text)
 
     # Create an in-memory buffer for the QR code image
@@ -56,18 +54,5 @@ def generate_qr(
     qr.save(img_io, format="PNG")
     img_io.seek(0)
 
-    # Construct the download link (same endpoint but forces file download)
-    base_url = str(request.base_url).rstrip("/")
-    download_url = f"{base_url}/generate_qr/?text={text}"
-
-    # Always return the image with Content-Disposition: attachment
-    response = Response(
-        content=img_io.getvalue(),
-        media_type="image/png",
-        headers={
-            "Content-Disposition": 'attachment; filename="qr_code.png"',
-            "X-Download-URL": download_url,  # Custom header with the link
-        }
-    )
-
-    return response
+    # Return the QR code as an image
+    return StreamingResponse(img_io, media_type="image/png")
